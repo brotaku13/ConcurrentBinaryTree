@@ -1,206 +1,289 @@
-package main
+package ConcurrentBinarytree
 
 import "testing"
 
-func createTestTree() *BinaryTree {
+func TestInsertEmptyTree(t *testing.T) {
 	tree := BinaryTree{}
-	tree.insert(20)
-	tree.insert(30)
-	tree.insert(10)
+	if tree.root != nil {
+		t.Error("Root is not nil")
+	}
+	tree.Insert(10);
 
-	tree.insert(4)
-	tree.insert(15)
+	root := tree.root;
+	if root == nil {
+		t.Error("Root does not exist")
+	}
+	if root.Value != 10 {
+		t.Error("Root value is not correct")
+	}
+	if root.parent != nil {
+		t.Error("Root parent is not nil")
+	}
+}
+
+func TestInsertRightWithOnlyRoot(t *testing.T) {
+	tree := BinaryTree{}
+	if got := tree.Insert(10); !got {
+		t.Error("Could not insert value 10")
+	}
+	if got := tree.Insert(20); !got {
+		t.Error("Coudl not insert value 20")
+	}
+
+	newNode := tree.root.right
+	if newNode == nil || newNode.Value != 20 || newNode.parent != tree.root {
+		t.Error("New node is not correct")
+	}
+}
+
+func TestInsertLeftWithOnlyRoot(t *testing.T) {
+	tree := BinaryTree{}
+	if got := tree.Insert(10); !got {
+		t.Error("Could not insert value 10")
+	}
+	if got := tree.Insert(5); !got {
+		t.Error("Coudl not insert value 5")
+	}
+
+	newNode := tree.root.left
+	if newNode == nil || newNode.Value != 5 || newNode.parent != tree.root {
+		t.Error("New node is not correct")
+	}
+}
+
+func TestInsertLeftWithMultipleLevel(t *testing.T) {
+	tree := BinaryTree{}
+	if got := tree.Insert(10); !got {
+		t.Error("Could not insert value 10")
+	}
+	if got := tree.Insert(5); !got {
+		t.Error("Could not insert value 20")
+	}
+	if got := tree.Insert(3); !got {
+		t.Error("Could not insert value 3")
+	}
+
+	newNodeParent := tree.root.left
+	newNode := tree.root.left.left
+	if newNode == nil || newNode.Value != 3 || newNode.parent != newNodeParent {
+		t.Error("Error inserting new node")
+	}
+}
+
+func TestInsertRightWithMultipleLevel(t *testing.T) {
+	tree := BinaryTree{}
+	if got := tree.Insert(10); !got {
+		t.Error("Could not insert value 10")
+	}
+	if got := tree.Insert(15); !got {
+		t.Error("Could not insert value 20")
+	}
+	if got := tree.Insert(18); !got {
+		t.Error("Could not insert value 7")
+	}
+
+	newNodeParent := tree.root.right
+	newNode := tree.root.right.right
+	if newNode == nil || newNode.Value != 18 || newNode.parent != newNodeParent {
+		t.Error("Error inserting new node")
+	}
+}
+
+func TestInsertNodeAlreadyExists(t *testing.T) {
+	tree := BinaryTree{}
+	if got := tree.Insert(10); !got {
+		t.Error("Could not insert value 10")
+	}
+	if got := tree.Insert(10); got {
+		t.Error("Accidentally insert value 10")
+	}
+}
+
+
+func TestSearchRightSubtree(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+	tree.Insert(20)
+	tree.Insert(15)
+	tree.Insert(25)
+
+	if got := tree.Search(25); got == nil {
+		t.Error("Could not find node")
+	}
+}
+
+func TestSearchLeftSubtree(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+	tree.Insert(20)
+	tree.Insert(15)
+	tree.Insert(25)
+
+	if got := tree.Search(15); got == nil {
+		t.Error("Could not find node")
+	}
+}
+
+func TestSearchRoot(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+
+	if got := tree.Search(10); got == nil {
+		t.Error("Could not find node")
+	}
+}
+
+func TestSearchNonExist(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+	tree.Insert(20)
+	tree.Insert(15)
+	tree.Insert(25)
+
+	if got := tree.Search(45); got != nil {
+		t.Error("Could not find node")
+	}	
+}
+
+func TestRemoveRootNoChildren(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+	if removed := tree.Remove(10); !removed {
+		t.Error("Could not remove root")
+	}
 	
-	tree.insert(25)
-	tree.insert(35)
-	return &tree
-}
-
-func TestSearchExisting(t *testing.T) {
-	root := Node{
-		3,
-		&Node{
-			4,
-			nil,
-			nil,
-		},
-		&Node{
-			2,
-			nil,
-			nil,
-		},
-	}
-	tree := BinaryTree{&root}
-	got := tree.Search(3)
-	if got == nil {
-		t.Errorf("Search could not find 3")
-	}
-	got = tree.Search(4)
-	if got == nil {
-		t.Error("Search could not find 4")
-	}
-	got = tree.Search(2)
-	if got == nil {
-		t.Error("Search could not find 2")
-	}
-}
-
-func TestSearchNotExisting(t *testing.T) {
-	root := Node{
-		3,
-		&Node{
-			4,
-			nil,
-			nil,
-		},
-		&Node{
-			2,
-			nil,
-			nil,
-		},
-	}
-	tree := BinaryTree{&root}
-	got := tree.Search(5)
-	if got != nil {
-		t.Errorf("Found 5 but it doesn't exist")
-	}
-	got = tree.Search(1)
-	if got != nil {
-		t.Error("Found 1 but it doesn't exist")
-	}
-	got = tree.Search(45)
-	if got != nil {
-		t.Error("Found 45 but it doesn't exist")
-	}
-}
-
-func TestInsertOnEmptyTree(t *testing.T) {
-	tree := BinaryTree{}
-	got := tree.insert(20)
-	if !got {
-		t.Error("Tree could not insert value on empty tree")
-	}
-}
-
-func TestInsertOnNonEmptyTree(t *testing.T) {
-	tree := createTestTree()
-
-	if tree.root.Value != 20 {
-		t.Error("Tree root was not 20")
-	} 
-	if tree.root.Right.Value != 30 {
-		t.Error("Tree right child not 30")
-	} 
-	if tree.root.Left.Value != 10 {
-		t.Error("Tree left child not correct")
-	}
-
-	// test left subtree
-	leftRoot := tree.root.Left
-	if leftRoot.Left == nil || leftRoot.Left.Value != 4 {
-		t.Error("Tree left root not 4")
-	}
-	if leftRoot.Left == nil ||  leftRoot.Right.Value != 15 {
-		t.Error("Tree left root right child not 15")
-	}
-
-	rightRoot := tree.root.Right
-	if rightRoot.Left == nil || rightRoot.Left.Value != 25 {
-		t.Error("Tree right root not 25")
-	}
-	if rightRoot.Right == nil || rightRoot.Right.Value != 35  {
-		t.Error("Tree right root right child not 35")
-	}
-}
-
-func TestDeleteRoot(t *testing.T) {
-	tree := createTestTree()
-
-	found := tree.Remove(20)
-	if !found {
-		t.Error("Could not find root to delete")
-	}
-
-	// check successor should be 25
-	if tree.root.Value != 25 {
-		t.Error("Successor is not correct")
-	}
-}
-
-
-func TestRemoveFromEmptyTree(t *testing.T) {
-	tree := BinaryTree{}
-	got := tree.Remove(2)
-	if got {
-		t.Error("Found non existing element in empty tree")
-	}
-}
-
-func TestDeleteLeafOnRight(t *testing.T) {
-	tree := createTestTree()
-	
-	if got := tree.Remove(4); !got {
-		t.Error("Could not remove existing leaf element")
-	}
-	if got := tree.Search(4); got != nil {
-		t.Error("Found non existing element")
-	}
-}
-
-func TestDeleteLeafOnLeft(t *testing.T) {
-	tree := createTestTree()
-	
-	if got := tree.Remove(15); !got {
-		t.Error("Could not remove existing leaf element")
-	}
-	if got := tree.Search(15); got != nil {
-		t.Error("Found non existing element")
-	}
-}
-
-func TestRemoveRootWithNoChildren(t *testing.T) {
-	tree := BinaryTree{}
-	tree.insert(10)
-	if found := tree.Search(10); found == nil {
-		t.Error("Could not find root")
-	}
-
-	if !tree.Remove(10) || tree.Search(10) != nil {
-		t.Error("Delete unsuccessful")
+	if tree.root != nil {
+		t.Error("Tree root not deleted")
 	}
 }
 
 func TestRemoveRootWithOneChild(t *testing.T) {
 	tree := BinaryTree{}
-	tree.insert(10)
-	tree.insert(15)
+	tree.Insert(10)
+	tree.Insert(20)
+	inserted := tree.root.right
 
-	if foundRoot, foundChild := tree.Search(10), tree.Search(15);
-		foundRoot == nil || foundChild == nil {
-			t.Error("Could not find root or child")
-		}
-	
-	if !tree.Remove(10) {
+	if removed := tree.Remove(10); !removed {
 		t.Error("Could not remove root")
 	}
 
-	if tree.root.Value != 15 {
-		t.Error("new root value is not 15")
+	if tree.root != inserted && tree.root.Value != 20 {
+		t.Error("New root is not correct")
 	}
-
 }
 
-func TestRemoveNonRootWithOneChild(t *testing.T) {
+func TestRemoveRootWithTwoChildren(t *testing.T) {
 	tree := BinaryTree{}
-	tree.insert(10)
-	tree.insert(15)	
-	tree.insert(20)
+	tree.Insert(10)
+	tree.Insert(20)
+	tree.Insert(5)
 
-	if !tree.Remove(15) {
-		t.Error("Could  not find existing value 15")
+	insertedLeft := tree.root.left
+	insertedRight := tree.root.right
+
+	if removed := tree.Remove(10); !removed {
+		t.Error("Could not remove root")
 	}
 
-	if tree.root.Value != 10 || tree.root.Right.Value != 20 {
-		t.Error("Removed elements left incorrect tree")
+	if tree.root != insertedRight && tree.root.Value != 20 && tree.root.left != insertedLeft && tree.root.left.Value != 5 {
+		t.Error("New root is not correct")
+	}
+}
+
+func TestRemoveLeafNode(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+
+	tree.Insert(5)
+		tree.Insert(7)
+		tree.Insert(3)
+
+	tree.Insert(20)
+		tree.Insert(12)
+		tree.Insert(25)
+
+	if removed := tree.Remove(25); !removed {
+		t.Error("Could not remove root")
+	}
+}
+
+func TestRemoveNotFound(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+	tree.Insert(20)
+	tree.Insert(5)
+
+	tree.Insert(12)
+	tree.Insert(25)
+
+	if removed := tree.Remove(56); removed {
+		t.Error("Removed non-existant node")
+	}
+}
+
+func TestRemoveInternalNodeTwoChildren(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+
+	tree.Insert(5)
+		tree.Insert(7)
+		tree.Insert(3)
+
+	tree.Insert(20)
+
+		tree.Insert(12)
+			tree.Insert(11)
+			tree.Insert(13)
+
+		tree.Insert(25)
+			tree.Insert(22)
+			tree.Insert(27)
+
+	if removed := tree.Remove(20); !removed {
+		t.Error("Could not remove internal node")
+	}
+
+	replacement := tree.root.right
+	if replacement.left.parent != replacement || replacement.right.parent != replacement{
+		t.Error("Parent node incorrect on child")
+	}
+	if replacement.Value != 22 {
+		t.Error("replaced with wrong node")
+	}
+	if replacement.parent != tree.root {
+		t.Error("parent node not set")
+	}
+}
+
+func TestRemoveInteriorNodeWithOneChild(t *testing.T) {
+	tree := BinaryTree{}
+	tree.Insert(10)
+
+	tree.Insert(5)
+		tree.Insert(7)
+		tree.Insert(3)
+
+	tree.Insert(20)
+
+		tree.Insert(12)		 // <- removing this node
+			tree.Insert(11) 
+
+		tree.Insert(25)
+			tree.Insert(27)
+	
+	if removed := tree.Remove(12); !removed {
+		t.Error("could not remove existing node")
+	}
+
+	if tree.root.right.left.Value != 11 {
+		t.Error("Incorrect value in removed replacement")
+	}
+
+	if removed := tree.Remove(25); !removed {
+		t.Error("could not remove existing node")
+	}
+
+	if tree.root.right.right.Value != 27 {
+		t.Error("Incorrect value in removed replacement")
 	}
 }
